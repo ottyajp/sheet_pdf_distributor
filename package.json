@@ -6,15 +6,12 @@
     "scripts": {
         "howto": "echo npm run start -- --src /path/to/src",
         "start": "ts-node ./src/index.ts",
-        "build": "tsc -p .",
-        "build:live": "nodemon --watch 'src/**/*.ts', --exec \"ts-node\" src/index.ts",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "build": "tsc -p ."
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^20.11.19",
-        "nodemon": "^3.0.3",
         "ts-node": "^10.9.2",
         "typescript": "^5.3.3"
     },
