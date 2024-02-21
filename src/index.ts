@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { readDictionary, readdir } from './wrapper-fs';
+import { copy, mkdir, readDictionary, readdir } from './wrapper-fs';
 import { DestinationNames } from './types/Dictionary';
 import { Dirent } from 'fs';
 
@@ -36,7 +36,10 @@ async function main() {
             const files = (await readdir(`${e.path}/${e.name}`)).filter((f) => {
                 return f.isFile() && f.name.indexOf('pdf') !== -1;
             });
-            return files;
+            return {
+                name: e.name,
+                files,
+            };
         })
     );
 
@@ -52,17 +55,20 @@ async function main() {
     );
 
     // 3-2. 予想分類の結果を表示する
-    const result: { [dest in DestinationNames]?: Dirent[] } & {
-        unexpected: Dirent[];
+    const result: {
+        name: string;
+        files: { [dest in DestinationNames]?: Dirent[] } & {
+            unexpected: Dirent[];
+        };
     }[] = [];
-    targetPDFs.forEach((directory) => {
+    targetPDFs.forEach(({ name, files }) => {
         const resultByDirecotry: { [dest in DestinationNames]?: Dirent[] } & {
             unexpected: Dirent[];
         } = {
             unexpected: [],
         };
 
-        directory.forEach((pdf) => {
+        files.forEach((pdf) => {
             const { name } = pdf;
 
             const destination = dict.reduce(
@@ -87,7 +93,10 @@ async function main() {
             }
         });
 
-        result.push(resultByDirecotry);
+        result.push({
+            name,
+            files: resultByDirecotry,
+        });
     });
 
     console.log(JSON.stringify(result, undefined, '  '));
@@ -96,6 +105,18 @@ async function main() {
     // 3-4. 満足できれば対応表を保存
 
     // 4. 実際にコピーする
+    await mkdir(destDir);
+    const promises = result.map(async ({ name, files }) => {
+        return Object.entries(files).map(async ([part, pdfs]) => {
+            await mkdir(`${destDir}/${part}/${name}`);
+            return pdfs.map(async (dirent) => {
+                const src = `${srcDir}/${name}/${dirent.name}`;
+                const dest = `${destDir}/${part}/${name}/${dirent.name}`;
+                await copy(src, dest);
+            });
+        });
+    });
+    (await Promise.all((await Promise.all(promises)).flat())).flat();
 }
 
 main();

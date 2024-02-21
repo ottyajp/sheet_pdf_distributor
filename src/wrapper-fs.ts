@@ -28,3 +28,31 @@ export async function readDictionary(path: string): Promise<Dictionary> {
         });
     });
 }
+
+export async function mkdir(path: string): Promise<string | void> {
+    return new Promise((resolve, reject) => {
+        fs.mkdir(
+            path,
+            { recursive: true },
+            (err: NodeJS.ErrnoException | null, path: string | undefined) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(path);
+                }
+            }
+        );
+    });
+}
+
+export async function copy(src: string, dest: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        fs.copyFile(src, dest, (err: NodeJS.ErrnoException | null) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
