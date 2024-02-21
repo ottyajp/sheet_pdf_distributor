@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { copy, mkdir, readDictionary, readdir } from './wrapper-fs';
 import { DestinationNames } from './types/Dictionary';
 import { Dirent } from 'fs';
+import { destinationNames } from './constants/destinationNames';
 
 async function main() {
     const program = new Command();
@@ -71,25 +72,30 @@ async function main() {
         files.forEach((pdf) => {
             const { name } = pdf;
 
-            const destination = dict.reduce(
-                (prev: DestinationNames | null, cur) => {
+            const destinations = dict.reduce(
+                (prev: DestinationNames[] | null, cur) => {
                     if (prev) return prev;
-                    const { keyword, dest } = cur;
+                    const { keyword, dest, all } = cur;
                     if (name.indexOf(keyword) !== -1) {
-                        return dest;
+                        if (all) {
+                            return destinationNames;
+                        }
+                        return [dest];
                     }
                     return null;
                 },
                 null
             );
 
-            if (!destination) {
+            if (!destinations) {
                 resultByDirecotry.unexpected.push(pdf);
             } else {
-                if (!resultByDirecotry[destination]) {
-                    resultByDirecotry[destination] = [];
-                }
-                resultByDirecotry[destination]?.push(pdf);
+                destinations.forEach((destination) => {
+                    if (!resultByDirecotry[destination]) {
+                        resultByDirecotry[destination] = [];
+                    }
+                    resultByDirecotry[destination]?.push(pdf);
+                });
             }
         });
 
@@ -109,7 +115,7 @@ async function main() {
     const promises = result.map(async ({ name, files }) => {
         return Object.entries(files).map(async ([part, pdfs]) => {
             await mkdir(`${destDir}/${part}/${name}`);
-            return pdfs.map(async (dirent) => {
+            return pdfs!.map(async (dirent) => {
                 const src = `${srcDir}/${name}/${dirent.name}`;
                 const dest = `${destDir}/${part}/${name}/${dirent.name}`;
                 await copy(src, dest);

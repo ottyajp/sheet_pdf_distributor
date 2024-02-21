@@ -1,4 +1,5 @@
 [
+    { "keyword": "Score", "dest": "DUMMY", "all": true },
     { "keyword": "Piccolo", "dest": "楽譜_Flute" },
     { "keyword": "Flute", "dest": "楽譜_Flute" },
     { "keyword": "Oboe", "dest": "楽譜_DoubleReed" },
