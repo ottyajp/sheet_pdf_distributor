@@ -24,14 +24,14 @@ async function main() {
         dictionary?: string;
     }>();
 
-    // 1. 対象を確認する
-    // 1-1. 対象ディレクトリを取得する。引数に無ければカレント
+    // 対象を確認する
+    // 対象ディレクトリを取得する。引数に無ければカレント
     const srcDir = options.src || './';
     const targetDirectories = (await readdir(srcDir)).filter((e) =>
         e.isDirectory()
     );
 
-    // 1-2. 対象ディレクトリに存在するPDFファイルの一覧を取得する
+    // 対象ディレクトリに存在するPDFファイルの一覧を取得する
     const targetPDFs = await Promise.all(
         targetDirectories.map(async (e) => {
             const files = (await readdir(`${e.path}/${e.name}`)).filter((f) => {
@@ -44,18 +44,15 @@ async function main() {
         })
     );
 
-    // 2. 宛先を確認する
-    // 2-1. 引数に無ければ親
+    // 宛先を確認する（引数に無ければ親）
     const destDir = options.dest || '../';
 
-    // 3. PDFファイルを分類する
-    // 3-1. 手持ち対応表で予想分類をする
     // 辞書読み込み
     const dict = await readDictionary(
         options.dictionary || './dictionary.json'
     );
 
-    // 3-2. 予想分類の結果を表示する
+    // PDFファイルを分類する
     const result: {
         name: string;
         files: { [dest in DestinationNames]?: Dirent[] } & {
@@ -107,10 +104,7 @@ async function main() {
 
     console.log(JSON.stringify(result, undefined, '  '));
 
-    // 3-3. 不満点があれば、対応表をいじって再度分類・表示
-    // 3-4. 満足できれば対応表を保存
-
-    // 4. 実際にコピーする
+    // 実際にコピーする
     await mkdir(destDir);
     const promises = result.map(async ({ name, files }) => {
         return Object.entries(files).map(async ([part, pdfs]) => {
