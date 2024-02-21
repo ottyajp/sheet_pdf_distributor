@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "howto": "echo npm run start -- --src /path/to/src",
+        "howto": "echo npm run start -- --src /path/to/src --dest /path/to/dest",
         "start": "ts-node ./src/index.ts",
         "build": "tsc -p ."
     },
