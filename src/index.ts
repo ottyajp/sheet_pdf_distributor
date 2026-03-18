@@ -12,14 +12,25 @@ async function main() {
         .description('sheet pdf distributor')
         .option(
             '-s, --src <path>',
-            'where the directories containing the PDF is located'
+            '`曲名/各ファイル`という構造を子に持つディレクトリ'
         )
-        .option('-d, --dest <path>')
+        .option('-d, --dest <path>',
+            '宛先ディレクトリ。この中にパートごとのディレクトリが作成される。'
+        )
         .option(
             '--subDir <path>',
-            'insert a sub directory under each destination folder'
+            '宛先ディレクトリにサブディレクトリを更に掘る場合は指定'
         )
         .option('--dictionary <path to JSON>');
+        program.addHelpText(
+            'after',
+            `
+
+Examples:
+  npm run start -- --src ./src --dest ./out --subDir eventName
+`
+                .trim()
+        );
 
     program.parse(process.argv);
     const options = program.opts<{
