@@ -15,12 +15,17 @@ async function main() {
             'where the directories containing the PDF is located'
         )
         .option('-d, --dest <path>')
+        .option(
+            '--subDir <path>',
+            'insert a sub directory under each destination folder'
+        )
         .option('--dictionary <path to JSON>');
 
     program.parse(process.argv);
     const options = program.opts<{
         src?: string;
         dest?: string;
+        subDir?: string;
         dictionary?: string;
     }>();
 
@@ -46,6 +51,7 @@ async function main() {
 
     // 宛先を確認する（引数に無ければ親）
     const destDir = options.dest || '../';
+    const subDir = options.subDir || '';
 
     // 辞書読み込み
     const dict = await readDictionary(
@@ -108,10 +114,15 @@ async function main() {
     await mkdir(destDir);
     const promises = result.map(async ({ name, files }) => {
         return Object.entries(files).map(async ([part, pdfs]) => {
-            await mkdir(`${destDir}/${part}/${name}`);
+            const destDirForPartAndName = subDir
+                ? `${destDir}/${part}/${subDir}/${name}`
+                : `${destDir}/${part}/${name}`;
+            await mkdir(destDirForPartAndName);
             return pdfs!.map(async (dirent) => {
                 const src = `${srcDir}/${name}/${dirent.name}`;
-                const dest = `${destDir}/${part}/${name}/${dirent.name}`;
+                const dest = subDir
+                    ? `${destDir}/${part}/${subDir}/${name}/${dirent.name}`
+                    : `${destDir}/${part}/${name}/${dirent.name}`;
                 await copy(src, dest);
             });
         });
